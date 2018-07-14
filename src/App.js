@@ -1,25 +1,53 @@
 import React, {Component} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {Col, Container, Form, FormGroup, Input, Label, Row, Table} from 'reactstrap';
+import {Container, Input, Table} from 'reactstrap';
 
 export default class App extends Component {
 
+    theadInfo = [
+        {
+            name: 'Country',
+            type: 'name',
+            value: ''
+        },
+        {
+            name: 'Capital',
+            type: 'capital',
+            value: ''
+        },
+        {
+            name: 'Alpha3Code',
+            type: 'alpha3Code',
+            value: ''
+        },
+        {
+            name: 'Alpha2Code',
+            type: 'alpha2Code',
+            value: ''
+        },
+    ];
+
     state = {
-        filterValue: '',
-        countries: []
+        countries: [],
+        theadInfo: this.theadInfo
     };
 
     serverData = [];
 
-    filterChange = async (e) => {
+    filterChange = (e) => {
 
-        const newCountries = this.serverData.filter((country) => {
-            return (country.name.toLowerCase()).indexOf(e.currentTarget.value.toLowerCase()) > -1
+        let newCountries = this.serverData.filter((country) => {
+            return (country[e.currentTarget.dataset.type].toLowerCase()).indexOf(e.currentTarget.value.toLowerCase()) > -1
         });
+
+        this.theadInfo[e.currentTarget.dataset.someKey].value = e.currentTarget.value;
+
+        newCountries = newCountries.length ? newCountries : [{name: 'Not Found'}];
 
         this.setState({
             filterValue: e.currentTarget.value,
-            countries: newCountries
+            countries: newCountries,
+            theadInfo: this.theadInfo
         });
 
     };
@@ -37,42 +65,46 @@ export default class App extends Component {
 
     render() {
 
-        const {filterValue, countries} = this.state;
+        const {countries, theadInfo} = this.state;
 
         return (
             <React.Fragment>
                 <Container>
-                    <Row>
-                        <Col xs="5">
-                            <Form className="mt-5">
-                                <FormGroup>
-                                    <Label for="filter">Filter Country</Label>
-                                    <Input
-                                        onChange={this.filterChange}
-                                        type="text"
-                                        name="filter"
-                                        id="filter"
-                                        placeholder="Filter Country"
-                                        value={filterValue}
-                                    />
-                                </FormGroup>
-                            </Form>
-                        </Col>
-                    </Row>
                     <Table>
                         <thead>
                         <tr>
-                            <th data-sort="first_name">
-                                Country
-                            </th>
+                            <th>#</th>
+                            {theadInfo.map((value, key) => {
+                                return (
+                                    <th key={value.name}>
+                                        {value.name}
+                                        <Input
+                                            data-some-key={key}
+                                            data-type={value.type}
+                                            onChange={this.filterChange}
+                                            type="text"
+                                            name="filter"
+                                            id="filter"
+                                            placeholder="Filter"
+                                            value={value.value}
+                                        />
+                                    </th>
+                                )
+                            })}
                         </tr>
                         </thead>
                         <tbody>
-                        {countries.length ? countries.map((data) => (
+                        {countries.length ? countries.map((data, key) => (
                             <tr key={data.alpha3Code}>
+                                <td>{++key}</td>
                                 <td>{data.name}</td>
+                                <td>{data.capital}</td>
+                                <td>{data.alpha3Code}</td>
+                                <td>{data.alpha2Code}</td>
                             </tr>
-                        )) : (<tr><td>LOADING...</td></tr>)}
+                        )) : (<tr>
+                            <td>LOADING...</td>
+                        </tr>)}
                         </tbody>
                     </Table>
                 </Container>
